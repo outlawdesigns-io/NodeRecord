@@ -3,8 +3,8 @@
 class Record{
 
     constructor(db,table,primaryKey,id){
-        const database = require('./db');
-        const config = require('../config');
+        const database = require('outlawdesigns.io.nodedb');
+        const config = require('./config');
         this.database = db;
         this.table = table;
         this.primaryKey = primaryKey;
