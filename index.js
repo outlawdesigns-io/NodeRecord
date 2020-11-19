@@ -4,12 +4,13 @@ class Record{
 
     constructor(db,table,primaryKey,id){
         const database = require('outlawdesigns.io.nodedb');
-        const config = require('./config');
+        // const config = require('./config');
         this.database = db;
         this.table = table;
         this.primaryKey = primaryKey;
         this.id = id;
-        this.db = new database(config.DBHOST,config.DBUSER,config.DBPASS,this.database);
+        console.log(global.config);
+        this.db = new database(global.config.DBHOST,global.config.DBUSER,global.config.DBPASS,this.database);
     }
     async _build(){
       try{
