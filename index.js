@@ -65,6 +65,13 @@ class Record{
         throw err;
       }
     }
+    async _getAll(){
+      try{
+        return await this.db.table(this.table).select(this.primaryKey).execute();
+      }catch(err){
+        throw err;
+      }
+    }
     static _getTehDate(){
         var dateObj = new Date();
         var month = dateObj.getUTCMonth() + 1; //months from 1-12
