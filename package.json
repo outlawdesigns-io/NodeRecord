@@ -1,6 +1,6 @@
 {
   "name": "outlawdesigns.io.noderecord",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "\"#NodeRecord\"",
   "main": "index.js",
   "scripts": {
