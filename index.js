@@ -9,7 +9,6 @@ class Record{
         this.table = table;
         this.primaryKey = primaryKey;
         this.id = id;
-        console.log(global.config);
         this.db = new database(global.config.DBHOST,global.config.DBUSER,global.config.DBPASS,this.database);
     }
     async _build(){
