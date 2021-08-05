@@ -1,6 +1,6 @@
 {
   "name": "outlawdesigns.io.noderecord",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "\"#NodeRecord\"",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "outlawdesigns.io.nodedb": "^1.0.0"
+    "outlawdesigns.io.nodedb": "^1.0.4"
   }
 }
