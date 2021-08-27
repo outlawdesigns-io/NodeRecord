@@ -9,7 +9,12 @@ class Record{
         this.table = table;
         this.primaryKey = primaryKey;
         this.id = id;
-        this.db = new database(global.config.DBHOST,global.config.DBUSER,global.config.DBPASS,this.database);
+        this.db = new database(
+          global.config[process.env.NODE_ENV].DBHOST,
+          global.config[process.env.NODE_ENV].DBUSER,
+          global.config[process.env.NODE_ENV].DBPASS,
+          this.database
+        );
     }
     async _build(){
       try{
