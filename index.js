@@ -52,6 +52,7 @@ class Record{
     }
     async _create(){
       let insertion = this._buildPublicObj();
+      delete insertion[this.primaryKey];
       try{
         await this.db.table(this.table).insert(insertion).execute();
         let lastId = await this._getId();
