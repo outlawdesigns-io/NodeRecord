@@ -16,7 +16,7 @@ class Record{
           this.database
         );
     }
-    async _build(){
+    async init(){
       try{
         let data = await this.db.table(this.table).select('*').where(this.primaryKey + "= '" + this.id + "'").execute();
         let keys = Object.keys(data[0]);
@@ -28,40 +28,12 @@ class Record{
       }
       return this;
     }
-    _buildPublicObj(){
-        let obj = {};
-        this.publicKeys.forEach((key)=>{
-            obj[key] = this[key];
-            if(key === 'teh_date'){
-                obj[key] = Record._getTehDate();
-            }
-            if(key === 'created_date'){
-                obj[key] = this.db.date();
-            }
-        });
-        return obj;
-    }
-    async _update(){
-      let update = this._buildPublicObj();
-      try{
-        let result = await this.db.table(this.table).update(update).where(this.primaryKey + "= '" + this.id + "'").execute();
-        return this._build();
-      }catch(err){
-        throw err;
-      }
-    }
-    async _create(){
-      let insertion = this._buildPublicObj();
-      delete insertion[this.primaryKey];
-      try{
-        await this.db.table(this.table).insert(insertion).execute();
-        let lastId = await this._getId();
-        this.id = lastId[0][this.primaryKey];
-         await this._build();
-         return this;
-      }catch(err){
-        throw err;
-      }
+    getPublicProperties(){
+      let obj = {};
+      this.publicKeys.forEach((key)=>{
+        obj[key] = this[key];
+      });
+      return obj;
     }
     async _getId(){
       try{
@@ -86,6 +58,37 @@ class Record{
             month = '0' + month;
         }
         return year + "-" + month + "-" + day;
+    }
+    _buildDbObj(){
+        let obj = {};
+        this.publicKeys.forEach((key)=>{
+          if(this[key] !== null && this[key] !== undefined){
+            obj[key] = this[key];
+          }
+        });
+        return obj;
+    }
+    async update(){
+      let update = this._buildDbObj();
+      try{
+        let result = await this.db.table(this.table).update(update).where(this.primaryKey + "= '" + this.id + "'").execute();
+        return this.init();
+      }catch(err){
+        throw err;
+      }
+    }
+    async create(){
+      let insertion = this._buildDbObj();
+      delete insertion[this.primaryKey];
+      try{
+        await this.db.table(this.table).insert(insertion).execute();
+        let lastId = await this._getId();
+        this.id = lastId[0][this.primaryKey];
+         await this.init();
+         return this;
+      }catch(err){
+        throw err;
+      }
     }
 }
 
