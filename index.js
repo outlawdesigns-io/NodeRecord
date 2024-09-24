@@ -90,6 +90,24 @@ class Record{
         throw err;
       }
     }
+    static truncate(){
+      let obj = new this();
+      return obj.db.table(obj.table).truncate().execute();
+    }
+    static delete(targetId){
+      let obj = new this();
+      return obj.db.table(obj.table).delete().where(obj.primaryKey + ' = ' + targetId).execute();
+    }
+    static async getAll(){
+      let currentObj = new this();
+      let records = [];
+      let ids = await currentObj._getAll();
+      for(let id in ids){
+        let obj = await new this(ids[id][currentObj.primaryKey]).init();
+        records.push(obj.getPublicProperties());
+      }
+      return records;
+    }    
 }
 
 module.exports = Record;
