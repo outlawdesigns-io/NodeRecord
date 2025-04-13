@@ -1,6 +1,6 @@
 {
-  "name": "outlawdesigns.io.noderecord",
-  "version": "2.0.1",
+  "name": "@outlawdesigns/db-record",
+  "version": "1.0.0",
   "description": "\"#NodeRecord\"",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "outlawdesigns.io.nodedb": "^1.0.4"
+    "@outlawdesigns/mysql-db": "^1.0.0"
   }
 }
