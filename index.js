@@ -78,7 +78,7 @@ class Record{
     return this.getDb().table(this.table).truncate().execute();
   }
   static delete(targetId){
-    return this.getDb().table(this.table).delete().where(`${obj.primaryKey} = ?`,[targetId]).execute();
+    return this.getDb().table(this.table).delete().where(`${this.primaryKey} = ?`,[targetId]).execute();
   }
   static async getAll(){
     const allRows = await this.getDb().table(this.table).select('*').execute();
