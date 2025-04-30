@@ -65,7 +65,7 @@ class Record{
     let insertion = this._buildDbObj();
     delete insertion[this.primaryKey];
     try{
-      let result = this.db.table(this.table).insert(insertion).execute();
+      let result = await this.db.table(this.table).insert(insertion).execute();
       let lastId = result.insertId;
       this.id = lastId;
       await this.init();
