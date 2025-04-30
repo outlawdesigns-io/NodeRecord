@@ -1,6 +1,6 @@
 {
   "name": "@outlawdesigns/db-record",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "\"#NodeRecord\"",
   "main": "index.js",
   "scripts": {
@@ -8,11 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/outlawdesigns-io/NodeRecord.git"
+    "url": "git+https://github.com/outlawdesigns-io/NodeRecord.git"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@outlawdesigns/mysql-db": "^1.0.0"
+    "@outlawdesigns/mysql-db": "^1.0.2"
   }
 }

@@ -1,9 +1,10 @@
 "use strict";
 
+const database = require('@outlawdesigns/mysql-db');
+
 class Record{
-  constructor(db,table,primaryKey,id){
-    const database = require('@outlawdesigns/mysql-db');
-    this.database = db;
+  constructor(databaseName,table,primaryKey,id){
+    this.database = databaseName;
     this.table = table;
     this.primaryKey = primaryKey;
     this.id = id;
@@ -19,51 +20,33 @@ class Record{
   }
   async init(){
     try{
-      let data = await this.db.table(this.table).select('*').where(this.primaryKey + "= '" + this.id + "'").execute();
-      let keys = Object.keys(data[0]);
-      keys.forEach((key)=>{
-        this[key] = data[0][key];
-      });
+      let data = await this.db.table(this.table).select('*').where(`${this.primaryKey} = ?`,[this.id]).execute();
+      if (!data || data.length === 0) throw new Error(`No record found for ID: ${this.id}`);
+      Object.assign(this,data[0]);
     }catch(err){
       throw err;
     }
     return this;
   }
   getPublicProperties(){
-    let obj = {};
-    this.publicKeys.forEach((key)=>{
-      obj[key] = this[key];
-    });
-    return obj;
+    let keys = this.publicKeys || Object.keys(this);
+    return keys.reduce((obj,key)=>{
+      if(this[key] !== undefined) obj[key] = this[key];
+      return obj;
+    },{});
   }
-  async _getId(){
-    try{
-      return await this.db.table(this.table).select(this.primaryKey).orderBy(this.primaryKey + " desc limit 1").execute();
-    }catch(err){
-      throw err;
-    }
-  }
-  async _getAll(){
-    try{
-      return await this.db.table(this.table).select(this.primaryKey).execute();
-    }catch(err){
-      throw err;
-    }
-  }
-  static _getTehDate(){
-    var dateObj = new Date();
-    var month = dateObj.getUTCMonth() + 1; //months from 1-12
-    var day = dateObj.getUTCDate();
-    var year = dateObj.getUTCFullYear();
-    if(month <= 9){
-      month = '0' + month;
-    }
-    return year + "-" + month + "-" + day;
+  static getDb(){
+    return new database(
+      process.env.MYSQL_HOST,
+      process.env.MYSQL_USER,
+      process.env.MYSQL_PASS,
+      this.database
+    );
   }
   _buildDbObj(){
     let obj = {};
     this.publicKeys.forEach((key)=>{
-      if(this[key] !== null && this[key] !== undefined){
+      if(this[key] !== undefined){
         obj[key] = this[key];
       }
     });
@@ -72,7 +55,7 @@ class Record{
   async update(){
     let update = this._buildDbObj();
     try{
-      let result = await this.db.table(this.table).update(update).where(this.primaryKey + "= '" + this.id + "'").execute();
+      let result = await this.db.table(this.table).update(update).where(`${this.primaryKey} = ?`,[this.id]).execute();
       return this.init();
     }catch(err){
       throw err;
@@ -82,32 +65,34 @@ class Record{
     let insertion = this._buildDbObj();
     delete insertion[this.primaryKey];
     try{
-      await this.db.table(this.table).insert(insertion).execute();
-      let lastId = await this._getId();
-      this.id = lastId[0][this.primaryKey];
-       await this.init();
-       return this;
+      let result = this.db.table(this.table).insert(insertion).execute();
+      let lastId = result.insertId;
+      this.id = lastId;
+      await this.init();
+      return this;
     }catch(err){
       throw err;
     }
   }
   static truncate(){
-    let obj = new this();
-    return obj.db.table(obj.table).truncate().execute();
+    return this.getDb().table(this.table).truncate().execute();
   }
   static delete(targetId){
-    let obj = new this();
-    return obj.db.table(obj.table).delete().where(obj.primaryKey + ' = ' + targetId).execute();
+    return this.getDb().table(this.table).delete().where(`${obj.primaryKey} = ?`,[targetId]).execute();
   }
   static async getAll(){
-    let currentObj = new this();
-    let records = [];
-    let ids = await currentObj._getAll();
-    for(let id in ids){
-      let obj = await new this(ids[id][currentObj.primaryKey]).init();
-      records.push(obj.getPublicProperties());
-    }
-    return records;
+    const allRows = await this.getDb().table(this.table).select('*').execute();
+    return allRows.map((row)=>{
+      const record = new this();
+      record.id = row[this.primaryKey];
+      record.table = this.table;
+      record.database = this.database;
+      record.db = this.db;
+      for(let key in row){
+        record[key] = row[key];
+      }
+      return record.getPublicProperties();
+    });
   }
 }
 
