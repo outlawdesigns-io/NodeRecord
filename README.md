@@ -1,74 +1,152 @@
-
 # NodeRecord
 
-`Record` is an extension of <a href="https://github.com/outlawdesigns-io/NodeDb">NodeDb</a>.
+**NodeRecord** is a lightweight ORM-style data layer built on top of [`@outlawdesigns/mysql-db`](https://www.npmjs.com/package/@outlawdesigns/mysql-db).  
+It provides an abstract `Record` class that can be extended to represent database entities as JavaScript classes, with built-in CRUD methods and automatic MySQL connection management.
 
-`Db` builds and executes queries while Record provides an abstract class that can be extended to represent generic database records.
+---
 
-## Requirements
+## 🚀 Features
 
-`Record` will attempt to automatically supply `host`,`username`, and `password` values to its underlying database connection by checking:
-* `global.config[process.env.NODE_ENV].DBHOST`
-* `global.config[process.env.NODE_ENV].DBUSER`
-* `global.config[process.env.NODE_ENV].DBPASS`.
+- 🗄️ Simple, class-based abstraction over raw MySQL queries  
+- ⚙️ Automatic database connection setup using environment variables  
+- 💾 Built-in CRUD helpers: create, update, delete, truncate, and getAll  
+- 🔑 Extendable model pattern for defining your own records  
+- 🔍 Converts database rows to public-safe objects easily
 
-While `Record` is abstract, its constructor should be called in the constructor of all child classes. Its constructor accepts 3 required parameters and one optional parameter.
-#### Example child constructor
-```
-constructor(db,table,primaryKey,id)
+---
 
-/*
-db: Database Name
-table: Database Table
-primaryKey: The name of the record's primary key field.
-id: The unique identifier of the specific record you would like to construct.
-*/
+## 📦 Installation
+
+```bash
+npm install @outlawdesigns/db-record
 ```
 
+---
 
-## Usage
+## ⚙️ Requirements
 
-When extending Record, it is important to note that all values in the `publicKeys` array should correspond to their database column names.
+`Record` requires the following **environment variables** to initialize database connections:
 
-```
+| Variable | Description |
+|-----------|-------------|
+| `MYSQL_HOST` | MySQL server host |
+| `MYSQL_USER` | MySQL username |
+| `MYSQL_PASS` | MySQL password |
 
+If any of these are missing, the constructor will throw an error.
+
+---
+
+## 🧠 Concept
+
+The `Record` class is designed to be **extended** for each database table.  
+Each subclass defines its database, table, and primary key.
+
+### Example
+
+```js
 "use strict";
 
-const Record = require('outlawdesigns.io.noderecord');
+const Record = require('@outlawdesigns/db-record');
 
-class Person extends Record{
-  constructor(id){
+class Person extends Record {
+  constructor(id) {
     const database = 'example';
     const table = 'people';
     const primaryKey = 'id';
-    super(database,table,primaryKey,id);
+    super(database, table, primaryKey, id);
     this.publicKeys = [
       'firstName',
       'lastName',
       'favorite_color',
       'isAlive'
-    ];  
+    ];
   }
 }
-
 ```
 
-## Methods
+### Notes
+- `publicKeys` defines which properties will be exposed when calling `getPublicProperties()`.
+- Always call `super()` inside the constructor with the proper arguments.
 
-### _create()
+---
 
-Save object to database.
+## 🧩 Constructor
 
-### _update()
+```js
+new Record(database, table, primaryKey, id)
+```
 
-Save changes made to the properties of an object instantiated with and Id.
+| Parameter | Description |
+|------------|-------------|
+| `database` | Name of the database |
+| `table` | Table name |
+| `primaryKey` | Primary key column name |
+| `id` | Optional record identifier |
 
-### _build()
+---
 
-### _getId()
+## 🧱 Methods
 
-### _buildPublicObj()
+### `async init()`
+Loads record data from the database using the supplied `id`.  
+Throws an error if no record is found.
 
-### _buildPublicObj()
+### `getPublicProperties()`
+Returns a filtered object containing only the keys listed in `publicKeys` (or all keys if none are defined).
 
-### _getTehDate()
+### `async create()`
+Inserts a new record into the table using the current property values.  
+Automatically sets the new `id` and re-initializes the instance.
+
+### `async update()`
+Updates the existing database record corresponding to `this.id` with the current property values.
+
+### `static truncate()`
+Truncates (clears) the table defined by the subclass.
+
+### `static delete(targetId)`
+Deletes a record by its primary key value.
+
+### `static async getAll()`
+Retrieves all rows from the table and returns an array of public objects.
+
+### `static getDb()`
+Creates and returns a new instance of the underlying database connection.
+
+### `_buildDbObj()`
+Builds a plain object containing only the `publicKeys` and their current values.
+
+---
+
+## 💡 Example Usage
+
+```js
+(async () => {
+  const person = new Person(1);
+  await person.init();
+  console.log(person.getPublicProperties());
+
+  person.favorite_color = 'blue';
+  await person.update();
+
+  const newPerson = new Person();
+  newPerson.firstName = 'Ada';
+  newPerson.lastName = 'Lovelace';
+  newPerson.isAlive = false;
+  await newPerson.create();
+})();
+```
+
+---
+
+## 🧾 License
+
+This project is licensed under the [ISC License](./LICENSE).
+
+---
+
+## 👤 Author
+
+Maintained by **Outlaw Designs**  
+[https://github.com/outlawdesigns-io](https://github.com/outlawdesigns-io)
